@@ -90,10 +90,11 @@ class Parser:
                 self.__lexeme_count += 1
                 ast['nodes'].append(self.get_random_choice_ast())
             if lexeme.code == LexemeCodes.random_mixing_start:
-                self.__lexeme_count += 2
-                if self.__lexemes[self.__lexeme_count - 1].code != LexemeCodes.random_mixing_delimiter:
+                self.__lexeme_count += 1
+                if self.__lexemes[self.__lexeme_count].code != LexemeCodes.random_mixing_delimiter:
                     ast['nodes'].append(self.get_random_mixing_ast())
                 else:
+                    self.__lexeme_count += 1
                     ast['nodes'].append(
                         self.get_random_mixing_with_delimiter_ast()
                     )
