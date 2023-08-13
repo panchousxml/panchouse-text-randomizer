@@ -5,3 +5,4 @@ venv/
 # setup.py
 *.egg-info/
 dist/
+build/
