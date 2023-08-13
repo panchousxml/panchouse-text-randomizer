@@ -18,15 +18,14 @@ class Compiler:
 
     def render_random_choice(self, node: dict) -> str:
         values = []
-        render_result = ''
 
         if node.get('values') is not None:
             values += node['values']
-            render_result += random.choice(values)
+            print(values)
         if node.get('nodes') is not None:
             for sub_node in node['nodes']:
-                render_result += self.render_random_choice(sub_node)
-        return random.choice(render_result)
+                values += self.render_random_choice(sub_node)
+        return values
 
     def render_ast(self) -> str:
         render_result = ''
@@ -37,7 +36,7 @@ class Compiler:
             if node['type'] == 'text':
                 render_result += node['value']
             if node['type'] == 'random_choice':
-                render_result += self.render_random_choice(node)
+                render_result += random.choice(self.render_random_choice(node))
             if node['type'] == 'random_mixing':
                 render_result += self.render_random_mixing_node(node)
             if node['type'] == 'random_mixing_with_delimiter_ast':
