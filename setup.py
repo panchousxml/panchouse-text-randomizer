@@ -8,7 +8,7 @@ def readme():
 
 setuptools.setup(
     name='text_randomizer',
-    version='0.0.2',
+    version='0.0.3',
     author='Timur Zolotov TZbooo netbiom',
     author_email='helloworldbooo@gmail.com',
     long_description=readme(),
