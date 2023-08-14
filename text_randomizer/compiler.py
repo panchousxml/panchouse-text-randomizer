@@ -8,7 +8,17 @@ class Compiler:
 
     def render_random_mixing_node(self, node: dict) -> str:
         random.shuffle(node['values'])
-        render_result = ''.join(node['values'])
+        render_result = ''
+
+        for value in node['values']:
+            if isinstance(value, str):
+                render_result += value
+                continue
+            if value.get('type') == 'random_choice':
+                render_result += random.choice(
+                    self.render_random_choice(value)
+                )
+                continue
         return render_result
 
     def render_random_mixing_with_delimiter_node(self, node: dict) -> str:
@@ -21,7 +31,6 @@ class Compiler:
 
         if node.get('values') is not None:
             values += node['values']
-            print(values)
         if node.get('nodes') is not None:
             for sub_node in node['nodes']:
                 values += self.render_random_choice(sub_node)

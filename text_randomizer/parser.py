@@ -38,6 +38,13 @@ class Parser:
         while self.__lexeme_count < len(self.__lexemes):
             lexeme = self.__lexemes[self.__lexeme_count]
 
+            if lexeme.code == LexemeCodes.random_choice_start:
+                self.__lexeme_count += 1
+                if random_mixing_ast.get('values') is None:
+                    random_mixing_ast['values'] = []
+                random_mixing_ast['values'].append(
+                    self.get_random_choice_ast()
+                )
             if lexeme.code == LexemeCodes.text:
                 if random_mixing_ast.get('values') is None:
                     random_mixing_ast['values'] = []
