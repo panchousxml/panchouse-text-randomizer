@@ -18,7 +18,6 @@ class Template:
         parser = Parser(lexemes)
         ast = parser.get_ast()
         # return ast
-
         compiler = Compiler(ast)
         render = compiler.render_ast()
         return render

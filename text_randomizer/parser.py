@@ -14,6 +14,19 @@ class Parser:
         while self.__lexeme_count < len(self.__lexemes):
             lexeme = self.__lexemes[self.__lexeme_count]
 
+            if lexeme.code == LexemeCodes.random_mixing_start:
+                self.__lexeme_count += 1
+                if random_choice_ast.get('values') is None:
+                    random_choice_ast['values'] = []
+                if self.__lexemes[self.__lexeme_count].code != LexemeCodes.random_mixing_delimiter:
+                    random_choice_ast['values'].append(
+                        self.get_random_mixing_ast()
+                    )
+                else:
+                    self.__lexeme_count += 1
+                    random_choice_ast['values'].append(
+                        self.get_random_mixing_with_delimiter_ast()
+                    )
             if lexeme.code == LexemeCodes.random_choice_start:
                 self.__lexeme_count += 1
                 if random_choice_ast.get('nodes') is None:
@@ -56,7 +69,7 @@ class Parser:
 
     def get_random_mixing_with_delimiter_ast(self) -> dict:
         random_mixing_with_delimiter_ast = {
-            'type': 'random_mixing_with_delimiter_ast'
+            'type': 'random_mixing_with_delimiter'
         }
 
         if self.__lexemes[self.__lexeme_count].code == LexemeCodes.random_mixing_delimiter:
@@ -69,6 +82,13 @@ class Parser:
         while self.__lexeme_count < len(self.__lexemes):
             lexeme = self.__lexemes[self.__lexeme_count]
 
+            if lexeme.code == LexemeCodes.random_choice_start:
+                self.__lexeme_count += 1
+                if random_mixing_with_delimiter_ast.get('values') is None:
+                    random_mixing_with_delimiter_ast['values'] = []
+                random_mixing_with_delimiter_ast['values'].append(
+                    self.get_random_choice_ast()
+                )
             if lexeme.code == LexemeCodes.text:
                 if random_mixing_with_delimiter_ast.get('values') is None:
                     random_mixing_with_delimiter_ast['values'] = []
