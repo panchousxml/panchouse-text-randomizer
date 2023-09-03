@@ -7,17 +7,15 @@ class Compiler:
         self.__ast_count = 0
 
     def render_random_mixing_node(self, node: dict) -> str:
-        random.shuffle(node['values'])
+        random.shuffle(node['nodes'])
         render_result = ''
 
-        for value in node['values']:
+        for value in node['nodes']:
             if isinstance(value, str):
                 render_result += value
                 continue
             if value.get('type') == 'random_choice':
-                render_result += random.choice(
-                    self.render_random_choice(value)
-                )
+                render_result += self.render_random_choice_node(value)
                 continue
             if value.get('type') == 'random_mixing_with_delimiter':
                 render_result += self.render_random_mixing_with_delimiter_node(
@@ -29,36 +27,50 @@ class Compiler:
     def render_random_mixing_with_delimiter_node(self, node: dict) -> str:
         values = []
 
-        for value in node['values']:
+        for value in node['nodes']:
             if isinstance(value, str):
                 values.append(value)
                 continue
             if value.get('type') == 'random_choice':
-                values.append(random.choice(value['values']))
+                values.append(random.choice(value['nodes']))
         random.shuffle(values)
         render_result = node['delimiter'].join(values)
         return render_result
 
-    def render_random_choice(self, node: dict) -> str:
+    def render_random_choice_node(self, node: dict) -> str:
         values = []
 
-        if node.get('values') is not None:
-            for value in node['values']:
-                if isinstance(value, str):
-                    values.append(value)
-                    continue
-                if value.get('type') == 'random_mixing':
-                    values.append(self.render_random_mixing_node(value))
-                    continue
-                if value.get('type') == 'random_mixing_with_delimiter':
+        for value in node['nodes']:
+            if isinstance(value, str):
+                values.append(value)
+                continue
+            if value.get('type') == 'random_choice':
+                if len(values):
                     values.append(
-                        self.render_random_mixing_with_delimiter_node(value)
+                        values.pop() + self.render_random_choice_node(value)
                     )
-                    continue
-        if node.get('nodes') is not None:
-            for sub_node in node['nodes']:
-                values += self.render_random_choice(sub_node)
-        return values
+                else:
+                    values.append(self.render_random_choice_node(value))
+                continue
+            if value.get('type') == 'random_mixing':
+                if len(values):
+                    values.append(
+                        values.pop() + self.render_random_mixing_node(value)
+                    )
+                else:
+                    values.append(self.render_random_mixing_node(value))
+                continue
+            if value.get('type') == 'random_mixing_with_delimiter':
+                if len(values):
+                    values.append(
+                        values.pop() + self.render_random_mixing_with_delimiter_node(value)
+                    )
+                else:
+                    values.append(
+                        self.render_random_mixing_with_delimiter_node(value))
+                continue
+
+        return random.choice(values)
 
     def render_ast(self) -> str:
         render_result = ''
@@ -69,7 +81,7 @@ class Compiler:
             if node['type'] == 'text':
                 render_result += node['value']
             if node['type'] == 'random_choice':
-                render_result += random.choice(self.render_random_choice(node))
+                render_result += self.render_random_choice_node(node)
             if node['type'] == 'random_mixing':
                 render_result += self.render_random_mixing_node(node)
             if node['type'] == 'random_mixing_with_delimiter':
