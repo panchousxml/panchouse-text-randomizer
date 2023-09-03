@@ -7,22 +7,33 @@ class Compiler:
         self.__ast_count = 0
 
     def render_random_mixing_node(self, node: dict) -> str:
-        random.shuffle(node['nodes'])
-        render_result = ''
+        values = []
 
         for value in node['nodes']:
             if isinstance(value, str):
-                render_result += value
+                values.append(value)
                 continue
             if value.get('type') == 'random_choice':
-                render_result += self.render_random_choice_node(value)
+                if len(values):
+                    values.append(
+                        values.pop() + self.render_random_choice_node(value)
+                    )
+                else:
+                    values.append(self.render_random_choice_node(value))
                 continue
             if value.get('type') == 'random_mixing_with_delimiter':
-                render_result += self.render_random_mixing_with_delimiter_node(
-                    value
-                )
+                if len(values):
+                    values.append(
+                        values.pop() + self.render_random_mixing_with_delimiter_node(value)
+                    )
+                else:
+                    values.append(
+                        self.render_random_mixing_with_delimiter_node(value)
+                    )
                 continue
-        return render_result
+
+        random.shuffle(values)
+        return ''.join(values)
 
     def render_random_mixing_with_delimiter_node(self, node: dict) -> str:
         values = []
@@ -32,7 +43,13 @@ class Compiler:
                 values.append(value)
                 continue
             if value.get('type') == 'random_choice':
-                values.append(random.choice(value['nodes']))
+                if len(values):
+                    values.append(
+                        values.pop() + random.choice(value['nodes'])
+                    )
+                else:
+                    values.append(random.choice(value['nodes']))
+
         random.shuffle(values)
         render_result = node['delimiter'].join(values)
         return render_result
