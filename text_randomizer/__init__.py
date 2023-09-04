@@ -1,3 +1,4 @@
+import json
 from .tokenizer import Tokenizer
 from .lexer import Lexer
 from .parser import Parser
@@ -17,6 +18,7 @@ class Template:
 
         parser = Parser(lexemes)
         ast = parser.get_ast()
+        print(json.dumps(ast, ensure_ascii=False, indent=2))
 
         compiler = Compiler(ast)
         render = compiler.render_ast()

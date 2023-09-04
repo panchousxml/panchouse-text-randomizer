@@ -4,33 +4,23 @@ import random
 class Compiler:
     def __init__(self, ast: dict) -> None:
         self.__ast = ast
-        self.__ast_count = 0
 
     def render_random_mixing_node(self, node: dict) -> str:
         values = []
 
-        for value in node['nodes']:
-            if isinstance(value, str):
-                values.append(value)
-                continue
-            if value.get('type') == 'random_choice':
-                if len(values):
-                    values.append(
-                        values.pop() + self.render_random_choice_node(value)
+        for sub_value in node['nodes']:
+            sub_value_result = ''
+
+            for value in sub_value:
+                if isinstance(value, str):
+                    sub_value_result += value
+                elif value.get('type') == 'random_choice':
+                    sub_value_result += self.render_random_choice_node(value)
+                elif value.get('type') == 'random_mixing_with_delimiter':
+                    sub_value_result += self.render_random_mixing_with_delimiter_node(
+                        value
                     )
-                else:
-                    values.append(self.render_random_choice_node(value))
-                continue
-            if value.get('type') == 'random_mixing_with_delimiter':
-                if len(values):
-                    values.append(
-                        values.pop() + self.render_random_mixing_with_delimiter_node(value)
-                    )
-                else:
-                    values.append(
-                        self.render_random_mixing_with_delimiter_node(value)
-                    )
-                continue
+            values.append(sub_value_result)
 
         random.shuffle(values)
         return ''.join(values)
@@ -38,17 +28,15 @@ class Compiler:
     def render_random_mixing_with_delimiter_node(self, node: dict) -> str:
         values = []
 
-        for value in node['nodes']:
-            if isinstance(value, str):
-                values.append(value)
-                continue
-            if value.get('type') == 'random_choice':
-                if len(values):
-                    values.append(
-                        values.pop() + random.choice(value['nodes'])
-                    )
-                else:
-                    values.append(random.choice(value['nodes']))
+        for sub_value in node['nodes']:
+            sub_value_result = ''
+
+            for value in sub_value:
+                if isinstance(value, str):
+                    sub_value_result += value
+                elif value.get('type') == 'random_choice':
+                    sub_value_result += self.render_random_choice_node(value)
+            values.append(sub_value_result)
 
         random.shuffle(values)
         render_result = node['delimiter'].join(values)
@@ -57,53 +45,36 @@ class Compiler:
     def render_random_choice_node(self, node: dict) -> str:
         values = []
 
-        for value in node['nodes']:
-            if isinstance(value, str):
-                values.append(value)
-                continue
-            if value.get('type') == 'random_choice':
-                if len(values):
-                    values.append(
-                        values.pop() + self.render_random_choice_node(value)
+        for sub_value in node['nodes']:
+            sub_value_result = ''
+
+            for value in sub_value:
+                if isinstance(value, str):
+                    sub_value_result += value
+                elif value.get('type') == 'random_choice':
+                    sub_value_result += self.render_random_choice_node(value)
+                elif value.get('type') == 'random_mixing':
+                    sub_value_result += self.render_random_mixing_node(value)
+                elif value.get('type') == 'random_mixing_with_delimiter':
+                    sub_value_result += self.render_random_mixing_with_delimiter_node(
+                        value
                     )
-                else:
-                    values.append(self.render_random_choice_node(value))
-                continue
-            if value.get('type') == 'random_mixing':
-                if len(values):
-                    values.append(
-                        values.pop() + self.render_random_mixing_node(value)
-                    )
-                else:
-                    values.append(self.render_random_mixing_node(value))
-                continue
-            if value.get('type') == 'random_mixing_with_delimiter':
-                if len(values):
-                    values.append(
-                        values.pop() + self.render_random_mixing_with_delimiter_node(value)
-                    )
-                else:
-                    values.append(
-                        self.render_random_mixing_with_delimiter_node(value))
-                continue
+            values.append(sub_value_result)
 
         return random.choice(values)
 
     def render_ast(self) -> str:
         render_result = ''
 
-        while self.__ast_count < len(self.__ast['nodes']):
-            node = self.__ast['nodes'][self.__ast_count]
-
-            if node['type'] == 'text':
-                render_result += node['value']
-            if node['type'] == 'random_choice':
+        for node in self.__ast['nodes']:
+            if isinstance(node, str):
+                render_result += node
+            elif node['type'] == 'random_choice':
                 render_result += self.render_random_choice_node(node)
-            if node['type'] == 'random_mixing':
+            elif node['type'] == 'random_mixing':
                 render_result += self.render_random_mixing_node(node)
-            if node['type'] == 'random_mixing_with_delimiter':
+            elif node['type'] == 'random_mixing_with_delimiter':
                 render_result += self.render_random_mixing_with_delimiter_node(
                     node
                 )
-            self.__ast_count += 1
         return render_result

@@ -11,36 +11,49 @@ class Parser:
 
     def get_random_choice_ast(self) -> dict:
         random_choice_ast = {
-            'type': 'random_choice'
+            'type': 'random_choice',
+            'nodes': []
         }
+        node_value_count = 0
 
         while self.__lexeme_count < len(self.__lexemes):
             lexeme = self._get_current_lexeme()
 
+            if lexeme.code == LexemeCodes.delimiter:
+                node_value_count += 1
+
             if lexeme.code == LexemeCodes.random_mixing_start:
                 self.__lexeme_count += 1
-                if random_choice_ast.get('nodes') is None:
-                    random_choice_ast['nodes'] = []
+                if len(random_choice_ast['nodes']) == node_value_count:
+                    random_choice_ast['nodes'].append([])
+
                 if self._get_current_lexeme().code != LexemeCodes.random_mixing_delimiter:
-                    random_choice_ast['nodes'].append(
+                    random_choice_ast['nodes'][node_value_count].append(
                         self.get_random_mixing_ast()
                     )
                 else:
                     self.__lexeme_count += 1
-                    random_choice_ast['nodes'].append(
+                    random_choice_ast['nodes'][node_value_count].append(
                         self.get_random_mixing_with_delimiter_ast()
                     )
+
+            if lexeme.code == LexemeCodes.text:
+                if len(random_choice_ast['nodes']) == node_value_count:
+                    random_choice_ast['nodes'].append([])
+
+                random_choice_ast['nodes'][node_value_count].append(
+                    lexeme.value
+                )
+
             if lexeme.code == LexemeCodes.random_choice_start:
                 self.__lexeme_count += 1
-                if random_choice_ast.get('nodes') is None:
-                    random_choice_ast['nodes'] = []
-                random_choice_ast['nodes'].append(
+                if len(random_choice_ast['nodes']) == node_value_count:
+                    random_choice_ast['nodes'].append([])
+
+                random_choice_ast['nodes'][node_value_count].append(
                     self.get_random_choice_ast()
                 )
-            if lexeme.code == LexemeCodes.text:
-                if random_choice_ast.get('nodes') is None:
-                    random_choice_ast['nodes'] = []
-                random_choice_ast['nodes'].append(lexeme.value)
+
             if lexeme.code == LexemeCodes.random_choice_end:
                 break
             self.__lexeme_count += 1
@@ -48,23 +61,34 @@ class Parser:
 
     def get_random_mixing_ast(self) -> dict:
         random_mixing_ast = {
-            'type': 'random_mixing'
+            'type': 'random_mixing',
+            'nodes': []
         }
+        node_value_count = 0
 
         while self.__lexeme_count < len(self.__lexemes):
             lexeme = self._get_current_lexeme()
 
+            if lexeme.code == LexemeCodes.delimiter:
+                node_value_count += 1
+
             if lexeme.code == LexemeCodes.random_choice_start:
                 self.__lexeme_count += 1
-                if random_mixing_ast.get('nodes') is None:
-                    random_mixing_ast['nodes'] = []
-                random_mixing_ast['nodes'].append(
+                if len(random_mixing_ast['nodes']) == node_value_count:
+                    random_mixing_ast['nodes'].append([])
+
+                random_mixing_ast['nodes'][node_value_count].append(
                     self.get_random_choice_ast()
                 )
+
             if lexeme.code == LexemeCodes.text:
-                if random_mixing_ast.get('nodes') is None:
-                    random_mixing_ast['nodes'] = []
-                random_mixing_ast['nodes'].append(lexeme.value)
+                if len(random_mixing_ast['nodes']) == node_value_count:
+                    random_mixing_ast['nodes'].append([])
+
+                random_mixing_ast['nodes'][node_value_count].append(
+                    lexeme.value
+                )
+
             if lexeme.code == LexemeCodes.random_mixing_end:
                 break
             self.__lexeme_count += 1
@@ -72,8 +96,10 @@ class Parser:
 
     def get_random_mixing_with_delimiter_ast(self) -> dict:
         random_mixing_with_delimiter_ast = {
-            'type': 'random_mixing_with_delimiter'
+            'type': 'random_mixing_with_delimiter',
+            'nodes': []
         }
+        node_value_count = 0
 
         if self._get_current_lexeme().code == LexemeCodes.random_mixing_delimiter:
             random_mixing_with_delimiter_ast['delimiter'] = ''
@@ -86,17 +112,26 @@ class Parser:
         while self.__lexeme_count < len(self.__lexemes):
             lexeme = self._get_current_lexeme()
 
+            if lexeme.code == LexemeCodes.delimiter:
+                node_value_count += 1
+
             if lexeme.code == LexemeCodes.random_choice_start:
                 self.__lexeme_count += 1
-                if random_mixing_with_delimiter_ast.get('nodes') is None:
-                    random_mixing_with_delimiter_ast['nodes'] = []
-                random_mixing_with_delimiter_ast['nodes'].append(
+                if len(random_mixing_with_delimiter_ast['nodes']) == node_value_count:
+                    random_mixing_with_delimiter_ast['nodes'].append([])
+
+                random_mixing_with_delimiter_ast['nodes'][node_value_count].append(
                     self.get_random_choice_ast()
                 )
+
             if lexeme.code == LexemeCodes.text:
-                if random_mixing_with_delimiter_ast.get('nodes') is None:
-                    random_mixing_with_delimiter_ast['nodes'] = []
-                random_mixing_with_delimiter_ast['nodes'].append(lexeme.value)
+                if len(random_mixing_with_delimiter_ast['nodes']) == node_value_count:
+                    random_mixing_with_delimiter_ast['nodes'].append([])
+
+                random_mixing_with_delimiter_ast['nodes'][node_value_count].append(
+                    lexeme.value
+                )
+
             if lexeme.code == LexemeCodes.random_mixing_end:
                 break
             self.__lexeme_count += 1
@@ -113,10 +148,7 @@ class Parser:
             lexeme = self._get_current_lexeme()
 
             if lexeme.code == LexemeCodes.text:
-                ast['nodes'].append({
-                    'type': 'text',
-                    'value': lexeme.value
-                })
+                ast['nodes'].append(lexeme.value)
             if lexeme.code == LexemeCodes.random_choice_start:
                 self.__lexeme_count += 1
                 ast['nodes'].append(self.get_random_choice_ast())
