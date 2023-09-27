@@ -15,6 +15,7 @@ class Template:
 
         lexer = Lexer(tokens)
         lexemes = lexer.get_lexems()
+        print(lexemes)
 
         parser = Parser(lexemes)
         ast = parser.get_ast()

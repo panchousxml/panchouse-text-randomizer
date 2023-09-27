@@ -20,6 +20,8 @@ class Parser:
             lexeme = self._get_current_lexeme()
 
             if lexeme.code == LexemeCodes.delimiter:
+                if not len(random_choice_ast['nodes']):
+                    random_choice_ast['nodes'].append([''])
                 node_value_count += 1
 
             if lexeme.code == LexemeCodes.random_mixing_start:
@@ -70,6 +72,8 @@ class Parser:
             lexeme = self._get_current_lexeme()
 
             if lexeme.code == LexemeCodes.delimiter:
+                if not len(random_mixing_ast['nodes']):
+                    random_mixing_ast['nodes'].append([''])
                 node_value_count += 1
 
             if lexeme.code == LexemeCodes.random_choice_start:
@@ -113,6 +117,8 @@ class Parser:
             lexeme = self._get_current_lexeme()
 
             if lexeme.code == LexemeCodes.delimiter:
+                if not len(random_mixing_with_delimiter_ast['nodes']):
+                    random_mixing_with_delimiter_ast['nodes'].append([''])
                 node_value_count += 1
 
             if lexeme.code == LexemeCodes.random_choice_start:
